@@ -3,15 +3,15 @@
 source /.setup_trac_config.sh
 
 setup_trac() {
-    [ ! -d /trac ] && mkdir /trac
-    if [ ! -f /trac/VERSION ]
+    [ ! -d $1 ] && mkdir $1
+    if [ ! -f $1/VERSION ]
     then
-        trac-admin /trac initenv "My New Project" sqlite:db/trac.db git /repo.git
-        setup_components
-        setup_accountmanager
-        setup_admin_user
-        trac-admin /trac config set logging log_type stderr
-        [ -f /var/www/trac_logo.png ] && cp -v /var/www/trac_logo.png /trac/htdocs/your_project_logo.png
+        trac-admin $1 initenv "$1" sqlite:db/trac.db git /repo.git
+        setup_components $1
+        setup_accountmanager $1
+        setup_admin_user $1
+        trac-admin $1 config set logging log_type stderr
+        [ -f /var/www/trac_logo.png ] && cp -v /var/www/trac_logo.png $1/htdocs/your_project_logo.png
     fi
 }
 
@@ -47,6 +47,9 @@ clean_house() {
     fi
 }
 
+ROOT=/trac
+TRACS="development maintenance administration"
+
 setup_repo
-setup_trac
+for TRAC in $TRACS; do setup_trac $ROOT/$TRAC; done
 clean_house
