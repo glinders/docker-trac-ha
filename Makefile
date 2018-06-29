@@ -13,11 +13,11 @@ DATA_IMAGE = $(DATA_NAME):$(VERSION)
 # port number used by application in container
 APP_PORT_CONTAINER = 80
 # port number to map to on host machine
-APP_PORT_HOST = 8080
+APP_PORT_HOST = 81
 # address of local host. Don't use 0.0.0.0 or leave blank
 # the 127 address limits container access to the local machine only
 # todo test LOCALHOST = 127.0.0.1
-LOCALHOST = 0.0.0.0
+LOCALHOST = 127.0.0.1
 
 # container names
 #
@@ -34,7 +34,8 @@ VOLUMES = -v /trac
 VOLUMES_FROM = --volumes-from $(DATAVOLUME)
 # port assignments
 PORTS = -p $(LOCALHOST):$(APP_PORT_HOST):$(APP_PORT_CONTAINER)
-# additional options
+# additional run options
+RUN_OPTIONS = --restart=no
 #
 .PHONY: build build_app build_data run run-app create-data start stop rm rmi mv-app mv-data
 
@@ -61,7 +62,7 @@ run: run-app
 
 run-app: create-data mv-app
 	# create and run the container
-	docker run $(OPTIONS) $(ENVVARS) $(LINKS) $(VOLUMES_FROM) $(PORTS) --name $(SERVICE_NAME) -d $(SERVICE_IMAGE)
+	docker run $(RUN_OPTIONS) $(ENVVARS) $(LINKS) $(VOLUMES_FROM) $(PORTS) --name $(SERVICE_NAME) -d $(SERVICE_IMAGE)
 
 create-data: mv-data
 	# create the data container
