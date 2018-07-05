@@ -1,9 +1,9 @@
 FROM ubuntu:18.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
+RUN apt-get install -y tzdata
 
 RUN apt-get install -y sqlite3
-
 
 RUN apt-get install -y pwgen
 RUN apt-get install -y git-core
@@ -32,6 +32,9 @@ ADD trac_logo.png /var/www/trac_logo.png
 ADD set_trac_user_password.py /usr/local/bin/
 RUN chmod 755 /usr/local/bin/set_trac_user_password.py
 
+# hack our timezone; should not be needed though
+RUN ln -fs /usr/share/zoneinfo/Pacific/Auckland /etc/localtime
+RUN dpkg-reconfigure -f noninteractive tzdata
 
 EXPOSE 80
 CMD ["/run.sh"]
