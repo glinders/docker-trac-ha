@@ -4,9 +4,11 @@ include ../docker-makeinc/docker.mk
 # name and version for image and container
 SERVICE_NAME = trac-app
 DATA_NAME = trac-data
+BACKUP_NAME = trac-backup
 VERSION = 1.0.dev
 SERVICE_IMAGE = $(SERVICE_NAME):$(VERSION)
 DATA_IMAGE = $(DATA_NAME):$(VERSION)
+BACKUP_IMAGE = $(BACKUP_NAME):$(VERSION)
 
 # port numbers and IP addresses
 #
@@ -29,7 +31,7 @@ ENVVARS =
 # links to other containers
 LINKS =
 # volumes exposed by the data container
-VOLUMES = -v /trac
+VOLUMES = -v /trac -v /backup
 # data container volumes are used by the application container
 VOLUMES_FROM = --volumes-from $(DATAVOLUME)
 # port assignments
@@ -37,12 +39,12 @@ PORTS = -p $(LOCALHOST):$(APP_PORT_HOST):$(APP_PORT_CONTAINER)
 # additional run options
 RUN_OPTIONS = --restart=no
 #
-.PHONY: build build_app build_data run run-app create-data start stop rm rmi mv-app mv-data
+.PHONY: build build_app build_data run run-app create-data create-backup start stop rm rmi mv-app mv-data mv-backup
 
 
 # build images
 #
-build: build_data
+build: build_backup
 
 build_app:
 	# force build new application image
@@ -56,17 +58,27 @@ build_data: build_app
 	# the data container will not be affected
 	docker build --build-arg SERVICE_IMAGE=$(SERVICE_IMAGE) -t $(DATA_IMAGE) -f Dockerfile-data .
 
+build_backup: build_data
+	# force build new backup image
+	# the old image will lose its tag, but will still be there
+	# the data container will not be affected
+	docker build --build-arg SERVICE_IMAGE=$(SERVICE_IMAGE) -t $(BACKUP_IMAGE) -f Dockerfile-backup .
+
 # create and run containers
 #
 run: run-app
 
-run-app: create-data mv-app
+run-app: create-data create-backup mv-app
 	# create and run the container
 	docker run $(RUN_OPTIONS) $(ENVVARS) $(LINKS) $(VOLUMES_FROM) $(PORTS) --name $(SERVICE_NAME) -d $(SERVICE_IMAGE)
 
 create-data: mv-data
 	# create the data container
 	docker create $(VOLUMES) --name $(DATA_NAME) $(DATA_IMAGE) /bin/true
+
+create-backup: mv-backup
+	# create the backup container
+	docker create $(RUN_OPTIONS) $(VOLUMES_FROM) --name $(BACKUP_NAME) $(BACKUP_IMAGE)
 
 # starting and stopping application container
 #
@@ -97,7 +109,7 @@ mv-app: stop
 	if docker inspect $(SERVICE_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${SERVICE_NAME}*"|sort -r)) \
 		echo application containers found $(CONTAINERS) ; \
- 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
+		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
 
 mv-data: stop
@@ -105,5 +117,15 @@ mv-data: stop
 	if docker inspect $(DATA_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${DATA_NAME}*"|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
- 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
+		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
+
+mv-backup: stop
+	# rename old backup container(s)
+	if docker inspect $(BACKUP_NAME) >/dev/null 2>&1; then \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${BACKUP_NAME}*"|sort -r)) \
+		echo data containers found $(CONTAINERS) ; \
+		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
+	fi
+
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# backup directory . in /trac; name it 'trac'
+./tar-backup trac /trac .

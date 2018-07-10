@@ -36,5 +36,8 @@ RUN chmod 755 /usr/local/bin/set_trac_user_password.py
 RUN ln -fs /usr/share/zoneinfo/Pacific/Auckland /etc/localtime
 RUN dpkg-reconfigure -f noninteractive tzdata
 
+# here we keep our backups
+RUN mkdir /backup
+
 EXPOSE 80
 CMD ["/run.sh"]
