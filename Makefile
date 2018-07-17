@@ -3,9 +3,9 @@ include ../docker-makeinc/docker.mk
 
 # name and version for image and container
 SERVICE_NAME = trac-app
-DATA_NAME = trac-data
-BACKUP_NAME = trac-backup
-VERSION = 1.0.dev
+DATA_NAME = $(SERVICE_NAME)-data
+BACKUP_NAME = $(SERVICE_NAME)-backup
+VERSION = 1.0
 SERVICE_IMAGE = $(SERVICE_NAME):$(VERSION)
 DATA_IMAGE = $(DATA_NAME):$(VERSION)
 BACKUP_IMAGE = $(BACKUP_NAME):$(VERSION)
@@ -107,7 +107,7 @@ rmi: rm
 mv-app: stop
 	# rename old application container(s)
 	if docker inspect $(SERVICE_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${SERVICE_NAME}*"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${SERVICE_NAME}$" --filter "name=^/${SERVICE_NAME}.old$"|sort -r)) \
 		echo application containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
@@ -115,7 +115,7 @@ mv-app: stop
 mv-data: stop
 	# rename old data container(s)
 	if docker inspect $(DATA_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${DATA_NAME}*"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${DATA_NAME}$" --filter "name=^/${DATA_NAME}.old$"|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
@@ -123,7 +123,7 @@ mv-data: stop
 mv-backup: stop
 	# rename old backup container(s)
 	if docker inspect $(BACKUP_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=${BACKUP_NAME}*"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${BACKUP_NAME}$" --filter "name=^/${BACKUP_NAME}.old$"|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi

@@ -48,7 +48,7 @@ clean_house() {
 }
 
 ROOT=/trac
-TRACS="development maintenance administration"
+TRACS="development maintenance administration sandbox"
 
 setup_repo
 for TRAC in $TRACS; do setup_trac $ROOT/$TRAC; done
