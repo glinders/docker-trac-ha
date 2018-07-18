@@ -22,7 +22,10 @@ RUN apt-get install -y trac-announcer
 # trac has native support for batchmodify since version 1.0.1
 # RUN apt-get install -y trac-batchmodify
 RUN apt-get install -y trac-graphviz
+RUN apt-get install -y trac-navadd
 RUN apt-get install -y python-flup
+# make editing configuration files a bit easier
+RUN apt-get install -y nano
 
 ADD setup_trac_config.sh /.setup_trac_config.sh
 ADD setup_trac.sh /.setup_trac.sh
