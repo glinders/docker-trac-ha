@@ -20,7 +20,7 @@ DATA_DIR=$TARGET
 TAR_FILES="$*"
 # timestamp and logfile
 TIMESTAMP=`date +'%Y%m%d'`
-LOGFILE=$BU_DIR/$TIMESTAMP.$NAME.log
+LOGFILE=$BU_DIR/$TIMESTAMP.$NAME.backup.log
 
 # create backup directory
 mkdir -p $BU_DIR

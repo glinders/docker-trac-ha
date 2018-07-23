@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# restore backup in directory /restore to directory /trac
+./tar-restore /restore /trac trac

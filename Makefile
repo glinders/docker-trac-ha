@@ -5,10 +5,12 @@ include ../docker-makeinc/docker.mk
 SERVICE_NAME = trac-app
 DATA_NAME = $(SERVICE_NAME)-data
 BACKUP_NAME = $(SERVICE_NAME)-backup
-VERSION = 1.0
+RESTORE_NAME = $(SERVICE_NAME)-restore
+VERSION = 1.1
 SERVICE_IMAGE = $(SERVICE_NAME):$(VERSION)
 DATA_IMAGE = $(DATA_NAME):$(VERSION)
 BACKUP_IMAGE = $(BACKUP_NAME):$(VERSION)
+RESTORE_IMAGE = $(RESTORE_NAME):$(VERSION)
 
 # port numbers and IP addresses
 #
@@ -31,7 +33,7 @@ ENVVARS =
 # links to other containers
 LINKS =
 # volumes exposed by the data container
-VOLUMES = -v /trac -v /backup
+VOLUMES = -v /trac -v /backup -v /restore
 # data container volumes are used by the application container
 VOLUMES_FROM = --volumes-from $(DATAVOLUME)
 # port assignments
@@ -39,12 +41,12 @@ PORTS = -p $(LOCALHOST):$(APP_PORT_HOST):$(APP_PORT_CONTAINER)
 # additional run options
 RUN_OPTIONS = --restart=no
 #
-.PHONY: build build_app build_data run run-app create-data create-backup start stop rm rmi mv-app mv-data mv-backup
+.PHONY: build build_app build_data run run-app create-data create-backup create-restore start stop rm rmi mv-app mv-data mv-backup mv-restore
 
 
 # build images
 #
-build: build_backup
+build: build_restore
 
 build_app:
 	# force build new application image
@@ -64,11 +66,17 @@ build_backup: build_data
 	# the data container will not be affected
 	docker build --build-arg SERVICE_IMAGE=$(SERVICE_IMAGE) -t $(BACKUP_IMAGE) -f Dockerfile-backup .
 
+build_restore: build_backup
+	# force build new restore image
+	# the old image will lose its tag, but will still be there
+	# the data container will not be affected
+	docker build --build-arg SERVICE_IMAGE=$(SERVICE_IMAGE) -t $(RESTORE_IMAGE) -f Dockerfile-restore .
+
 # create and run containers
 #
 run: run-app
 
-run-app: create-data create-backup mv-app
+run-app: create-data create-backup create-restore mv-app
 	# create and run the container
 	docker run $(RUN_OPTIONS) $(ENVVARS) $(LINKS) $(VOLUMES_FROM) $(PORTS) --name $(SERVICE_NAME) -d $(SERVICE_IMAGE)
 
@@ -76,9 +84,13 @@ create-data: mv-data
 	# create the data container
 	docker create $(VOLUMES) --name $(DATA_NAME) $(DATA_IMAGE) /bin/true
 
-create-backup: mv-backup
+create-backup: create-data mv-backup
 	# create the backup container
 	docker create $(RUN_OPTIONS) $(VOLUMES_FROM) --name $(BACKUP_NAME) $(BACKUP_IMAGE)
+
+create-restore: create-data mv-restore
+	# create the restore container
+	docker create $(RUN_OPTIONS) $(VOLUMES_FROM) --name $(RESTORE_NAME) $(RESTORE_IMAGE)
 
 # starting and stopping application container
 #
@@ -107,7 +119,7 @@ rmi: rm
 mv-app: stop
 	# rename old application container(s)
 	if docker inspect $(SERVICE_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${SERVICE_NAME}$" --filter "name=^/${SERVICE_NAME}.old$"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${SERVICE_NAME}$$ --filter name=^/${SERVICE_NAME}.old$$|sort -r)) \
 		echo application containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
@@ -115,7 +127,7 @@ mv-app: stop
 mv-data: stop
 	# rename old data container(s)
 	if docker inspect $(DATA_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${DATA_NAME}$" --filter "name=^/${DATA_NAME}.old$"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${DATA_NAME}$$ --filter name=^/${DATA_NAME}.old$$|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi
@@ -123,7 +135,15 @@ mv-data: stop
 mv-backup: stop
 	# rename old backup container(s)
 	if docker inspect $(BACKUP_NAME) >/dev/null 2>&1; then \
-		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter "name=^/${BACKUP_NAME}$" --filter "name=^/${BACKUP_NAME}.old$"|sort -r)) \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${BACKUP_NAME}$$ --filter name=^/${BACKUP_NAME}.old$$|sort -r)) \
+		echo data containers found $(CONTAINERS) ; \
+		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
+	fi
+
+mv-restore: stop
+	# rename old restore container(s)
+	if docker inspect $(RESTORE_NAME) >/dev/null 2>&1; then \
+		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${RESTORE_NAME}$$ --filter name=^/${RESTORE_NAME}.old$$|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
 		$(foreach C,$(CONTAINERS),$(shell docker container rename $(C) $(C).old)) \
 	fi

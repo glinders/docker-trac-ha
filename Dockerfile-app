@@ -41,6 +41,8 @@ RUN dpkg-reconfigure -f noninteractive tzdata
 
 # here we keep our backups
 RUN mkdir /backup
+# here we restore from
+RUN mkdir /restore
 
 EXPOSE 80
 CMD ["/run.sh"]
