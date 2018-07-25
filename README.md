@@ -1,6 +1,6 @@
 # trac as a Docker service
 
-trac runs as a ervice, using a data container.
+trac runs as a service, using a data container.
 
 Data can be backed up and restored using the backup and restore containers
 
@@ -12,9 +12,9 @@ Data can be backed up and restored using the backup and restore containers
 
 All data resides in directory /trac.
 Data is backed up to directory /backup (tar.gz file).
-To back up, use ommand:
+To back up, use command:
 
-    docker run trac-app-backup
+    docker start trac-app-backup
 
 Use `docker cp trac-app:/backup <dest>` to get backups out of container.
 
@@ -25,4 +25,4 @@ Archive to restore must be one created above (format: 20180724.trac.tar.gz).
 Use `docker cp <archive> trac-app:/restore` to get archive into container.
 To restore, use command:
 
-    docker run trac-app-restore
+    docker start trac-app-restore
