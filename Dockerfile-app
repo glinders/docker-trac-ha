@@ -24,8 +24,13 @@ RUN apt-get install -y trac-announcer
 RUN apt-get install -y trac-graphviz
 RUN apt-get install -y trac-navadd
 RUN apt-get install -y python-flup
+# required by TracLDAPAuth
+RUN apt-get install -y python-ldap
+# needed to install TracLDAPAuth
+RUN apt-get install -y python-pip
 # make editing configuration files a bit easier
 RUN apt-get install -y nano
+RUN pip install TracLDAPAuth
 
 ADD setup_trac_config.sh /.setup_trac_config.sh
 ADD setup_trac.sh /.setup_trac.sh
