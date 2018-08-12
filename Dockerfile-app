@@ -27,6 +27,7 @@ RUN apt-get install -y python-flup
 # required by TracLDAPAuth
 RUN apt-get install -y python-ldap
 # needed to install TracLDAPAuth
+RUN apt-get update
 RUN apt-get install -y python-pip
 # make editing configuration files a bit easier
 RUN apt-get install -y nano
