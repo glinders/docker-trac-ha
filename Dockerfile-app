@@ -15,7 +15,8 @@ RUN apt-get install -y trac-customfieldadmin
 RUN apt-get install -y trac-xmlrpc
 RUN apt-get install -y trac-wikiprint
 RUN apt-get install -y trac-wysiwyg
-RUN apt-get install -y trac-mastertickets
+# version 3.0.2 is too old for Trac 1.2; see pip below
+# RUN apt-get install -y trac-mastertickets
 RUN apt-get install -y trac-tags
 RUN apt-get install -y trac-diavisview
 RUN apt-get install -y trac-announcer
@@ -26,17 +27,22 @@ RUN apt-get install -y trac-navadd
 RUN apt-get install -y python-flup
 # required by TracLDAPAuth
 RUN apt-get install -y python-ldap
-# needed to install TracLDAPAuth
+# needed to install TracLDAPAuth and setuptools
 RUN apt-get update
 RUN apt-get install -y python-pip
 # make editing configuration files a bit easier
 RUN apt-get install -y nano
 RUN pip install TracLDAPAuth
+RUN pip install setuptools==40.0.0
+RUN pip install TracMasterTickets==4.0.2
 
 ADD setup_trac_config.sh /.setup_trac_config.sh
 ADD setup_trac.sh /.setup_trac.sh
 ADD run.sh /run.sh
 ADD trac_logo.png /var/www/trac_logo.png
+
+ADD Tracchildtickets-2.5.6.dev0-py2.7.egg /Tracchildtickets-2.5.6.dev0-py2.7.egg
+RUN easy_install -Z /Tracchildtickets-2.5.6.dev0-py2.7.egg && rm /Tracchildtickets-2.5.6.dev0-py2.7.egg
 
 ADD set_trac_user_password.py /usr/local/bin/
 RUN chmod 755 /usr/local/bin/set_trac_user_password.py
