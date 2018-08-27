@@ -121,7 +121,7 @@ mv-app: stop
 	if docker inspect $(SERVICE_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${SERVICE_NAME}$$ --filter name=^/${SERVICE_NAME}.old$$|sort -r)) \
 		echo application containers found $(CONTAINERS) ; \
-		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo nothing to do")) \
+		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo echo nothing to do")) \
 		$(foreach C,$(CONTAINERS),$(shell bash -c "echo rename $(C); docker rm $(C).old; docker container rename $(C) $(C).old; echo done;")) ; \
 	fi
 
@@ -130,7 +130,7 @@ mv-data: stop
 	if docker inspect $(DATA_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${DATA_NAME}$$ --filter name=^/${DATA_NAME}.old$$|sort -r)) \
 		echo data containers found $(CONTAINERS) ; \
-		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo nothing to do")) \
+		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo echo nothing to do")) \
 		$(foreach C,$(CONTAINERS),$(shell bash -c "echo rename $(C); docker rm $(C).old; docker container rename $(C) $(C).old; echo done;")) ; \
 	fi
 
@@ -139,7 +139,7 @@ mv-backup: stop
 	if docker inspect $(BACKUP_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${BACKUP_NAME}$$ --filter name=^/${BACKUP_NAME}.old$$|sort -r)) \
 		echo backup containers found $(CONTAINERS) ; \
-		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo nothing to do")) \
+		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo echo nothing to do")) \
 		$(foreach C,$(CONTAINERS),$(shell bash -c "echo rename $(C); docker rm $(C).old; docker container rename $(C) $(C).old; echo done;")) ; \
 	fi
 
@@ -148,7 +148,7 @@ mv-restore: stop
 	if docker inspect $(RESTORE_NAME) >/dev/null 2>&1; then \
 		$(eval CONTAINERS = $(shell docker container ls --all --format "{{.Names}}" --filter name=^/${RESTORE_NAME}$$ --filter name=^/${RESTORE_NAME}.old$$|sort -r)) \
 		echo restore containers found $(CONTAINERS) ; \
-		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo nothing to do")) \
+		$(if ifeq($(CONTAINERS),),$(shell bash -c "echo echo nothing to do")) \
 		$(foreach C,$(CONTAINERS),$(shell bash -c "echo rename $(C); docker rm $(C).old; docker container rename $(C) $(C).old; echo done;")) ; \
 	fi
 
