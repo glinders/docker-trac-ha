@@ -5,7 +5,7 @@ FROM ubuntu:18.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update
 #
-# add requirements and tool first before installing trac
+# add requirements and tools first before installing trac
 #
 # add database support
 RUN apt-get install -y sqlite3
@@ -17,6 +17,8 @@ RUN apt-get install -y nano
 RUN apt-get install -y pwgen
 RUN apt-get install -y unzip
 RUN apt-get install -y python-ldap
+RUN apt-get install -y tzdata
+RUN apt-get install -y graphviz
 #
 # trac is not included in ubuntu 20.04; install using pip instead
 #
@@ -31,13 +33,11 @@ RUN pip install textile==3.0.4
 RUN pip install TracLDAPAuth
 RUN pip install pyrad
 RUN pip install genshi
-  
-
 #
 # install trac (and all its dependencies)
 RUN pip install trac==1.4.3
+#
 # install plugins
-
 #
 # add script to install plugins from source
 ADD install_trac_zip /install_trac_zip
@@ -57,51 +57,32 @@ RUN /install_trac_zip /tracforms-trunk-18431.zip
 # install account manager plugin from source
 ADD TracAccountManager-trunk-18431.zip /TracAccountManager-trunk-18431.zip
 RUN /install_trac_zip /TracAccountManager-trunk-18431.zip
-
-
-
-
-# TODO:TEST
 #
-
-
-###RUN apt-get install -y tzdata
+# todo:do we need these ?
 ###RUN apt-get install -y trac-customfieldadmin
-###RUN apt-get install -y trac-xmlrpc
 ###RUN apt-get install -y trac-wikiprint
 ###RUN apt-get install -y trac-wysiwyg
 ###RUN apt-get install -y trac-tags
 ###RUN apt-get install -y trac-diavisview
-###RUN apt-get install -y trac-announcer
-###RUN apt-get install -y trac-graphviz
-###RUN apt-get install -y trac-navadd
 ###RUN apt-get install -y python-flup
-# required by TracLDAPAuth
-###RUN apt-get install -y python-ldap
-# needed to install TracLDAPAuth and setuptools
-###RUN apt-get update
-###RUN pip install TracLDAPAuth
-###RUN pip install setuptools==40.0.0
-
+#
 ADD setup_trac_config.sh /.setup_trac_config.sh
 ADD setup_trac.sh /.setup_trac.sh
 ADD run.sh /run.sh
 ADD trac_logo.png /var/www/trac_logo.png
-
-###ADD Tracchildtickets-2.5.6.dev0-py2.7.egg /Tracchildtickets-2.5.6.dev0-py2.7.egg
-###RUN easy_install -Z /Tracchildtickets-2.5.6.dev0-py2.7.egg && rm /Tracchildtickets-2.5.6.dev0-py2.7.egg
-
+#
 ADD set_trac_user_password.py /usr/local/bin/
 RUN chmod 755 /usr/local/bin/set_trac_user_password.py
-
-# hack our timezone; should not be needed though
-###RUN ln -fs /usr/share/zoneinfo/Pacific/Auckland /etc/localtime
-###RUN dpkg-reconfigure -f noninteractive tzdata
-
+#
+# set our timezone
+RUN ln -fs /usr/share/zoneinfo/Pacific/Auckland /etc/localtime
+RUN dpkg-reconfigure -f noninteractive tzdata
+#
 # here we keep our backups
 RUN mkdir /backup
+#
 # here we restore from
 RUN mkdir /restore
-
+#
 EXPOSE 80
 CMD ["/run.sh"]
