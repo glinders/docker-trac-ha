@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# sanity check
+if [ "$#" -ne 1 ]; then
+    echo "syntax: $0 <filename>"
+    exit 1
+fi
+
+# zip filename
+ZIPNAME=$1
+# temporary directory for creating wheel
+ZIPTMPDIR=$(mktemp)
+# unzip creates directory
+rm -rf ${ZIPTMPDIR}
+
+# unzip files
+unzip -d ${ZIPTMPDIR} ${ZIPNAME}
+# create a wheel, after finding setup.py
+cd ${ZIPTMPDIR}
+SETUPPY=$(find . -name setup.py|grep trunk)
+# account for directories that contain 'trunk'
+if [ "${SETUPPY}" != "" ] ; then cd `dirname ${SETUPPY}` ; fi
+python setup.py bdist_wheel
+# install it
+pip install dist/*.whl
+
+# clean up
+rm -rf ${ZIPTMPDIR}
