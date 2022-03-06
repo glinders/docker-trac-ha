@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# see: https://stackoverflow.com/a/40525217/4459346
+
+# monitor directory /trac and copy any changes over to /data/trac
+while inotifywait -r -e modify,create,delete,move /trac; do
+    rsync -avz /trac /data
+done

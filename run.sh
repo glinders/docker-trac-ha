@@ -9,4 +9,8 @@ TRACS="development maintenance administration sandbox"
 for TRAC in $TRACS; do trac-admin $ROOT/$TRAC upgrade; done
 for TRAC in $TRACS; do trac-admin $ROOT/$TRAC wiki upgrade; done
 
-tracd -p 80 -e /trac
+# start synchronisation to directory /data
+/crsync &
+
+# start tracd using https
+tracd -p 80 -e /trac --protocol https --certfile /ssl/fullchain.pem --keyfile /ssl/privkey.pem 
